@@ -1,0 +1,329 @@
+﻿@using System.Web.Mvc.Html
+@using Microsoft.AspNet.Identity
+@using Microsoft.AspNet.Identity.EntityFramework
+@using Microsoft.Owin.Security
+@* Remove this section if you are using bundling *@
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+}
+@{
+    Page.Title = "Employer";
+
+    // Initialize general page variables
+    var userName = "";
+    var email = "";
+    var password = "";
+    var confirmPassword = "";
+    var homePhoneNumber = "";
+    var cellPhoneNumber = "";
+    var address = "";
+    var city = "";
+    var state = "";
+    var zip = "";
+    var major = "";
+    var firstName = "";
+    var lastName = "";
+    var middleName = "";
+    var companyName = "";
+    var businessPhoneNumber = "";
+
+    // Setup validation
+            Validation.RequireField("firstName", "Enter your First Name");
+    Validation.RequireField("lastName", "Enter your Last Name");
+    Validation.RequireField("userName", "You must specify a user name");
+    Validation.RequireField("email", "Email address cannot be blank");
+    Validation.RequireField("password", "Password cannot be blank");
+    Validation.Add("confirmPassword",
+        Validator.EqualsTo("password", "Password and confirmation password do not match"));
+    Validation.Add("password",
+        Validator.StringLength(
+            maxLength: Int32.MaxValue,
+            minLength: 6,
+            errorMessage: "Password must be at least 6 characters"));
+    Validation.RequireField("address", "Please enter your street address");
+    Validation.RequireField("city", "City cannot be blank");
+    Validation.RequireField("state", "State cannot be blank");
+    Validation.RequireField("zip", "Zip Code cannot be blank");
+
+    // If this is a POST request, validate and process data
+    if (IsPost)
+    {
+        AntiForgery.Validate();
+        userName = Request.Form["userName"];
+        email = Request.Form["email"];
+        password = Request.Form["password"];
+        confirmPassword = Request.Form["confirmPassword"];
+
+
+        // If all information is valid, create a new account
+        if (Validation.IsValid())
+        {
+            var userStore = new UserStore<IdentityUser>();
+            var manager = new UserManager<IdentityUser>(userStore);
+
+            // configure passwords allowed on server
+            manager.PasswordValidator = new PasswordValidator
+            {
+                RequireDigit = false,
+                RequiredLength = 6,
+                RequireLowercase = false,
+                RequireNonLetterOrDigit = false,
+                RequireUppercase = false
+            };
+
+            var user = new IdentityUser()
+            {
+                UserName = userName,
+                Email = email
+            };
+            var result = manager.Create(user, password);
+
+            if (result.Succeeded)
+            {
+                var authenticationManager = HttpContext.Current.GetOwinContext().Authentication;
+                var userIdentity = manager.CreateIdentity(user, DefaultAuthenticationTypes.ApplicationCookie);
+                authenticationManager.SignIn(new AuthenticationProperties() { }, userIdentity);
+                Response.Redirect("~/");
+            }
+            else
+            {
+                // User already exists
+                ModelState.AddFormError("User name is already in use.");
+            }
+        }
+    }
+}
+@section featured {
+    <section class="featured">
+        <div class="content-wrapper">
+            <hgroup class="title">
+                <h1>@Page.Title</h1>
+                <h2>Create a new account</h2>
+            </hgroup>
+        </div>
+    </section>
+}        
+
+    <form method="post">
+    @AntiForgery.GetHtml()
+    @* If at least one validation error exists, notify the user *@
+    @Html.ValidationSummary("Account creation was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+    <fieldset>
+        <legend>Contact Information</legend>
+        
+        <p>
+            <label for="companyName" @if (!ModelState.IsValidField("companyName")) { <text> class="error-label" </text>    }>Company Name</label>
+            <input type="text" id="companyName" name="companyName" value="@companyName" @Validation.For("companyName") />
+            @Html.ValidationMessage("companyName")
+        </p>
+        <p>
+            <label for="firstName" @if (!ModelState.IsValidField("firstName")) { <text> class="error-label" </text>   }>First Name</label>
+            <input type="text" id="firstName" name="firstName" value="@firstName" @Validation.For("firstName") />
+            @* Write any email validation errors to the page *@
+            @Html.ValidationMessage("firstName")
+
+            <label for="lastName" @if (!ModelState.IsValidField("lastName")) { <text> class="error-label" </text>   }>Last Name</label>
+            <input type="text" id="lastName" name="lastName" value="@lastName" @Validation.For("lastName") />
+            @* Write any email validation errors to the page *@
+            @Html.ValidationMessage("lastName")
+        </p>
+
+        <p>
+            <label for="userName" @if (!ModelState.IsValidField("userName")) { <text> class="error-label" </text> }>User Name</label>
+            <input type="text" id="userName" name="userName" value="@userName" @Validation.For("userName") />
+            @* Write any userName validation errors to the page *@
+            @Html.ValidationMessage("userName")
+
+
+            <label for="email" @if (!ModelState.IsValidField("email")) { <text> class="error-label" </text>  }>Email</label>
+            <input type="text" id="email" name="email" value="@email" @Validation.For("email") />
+            @* Write any email validation errors to the page *@
+            @Html.ValidationMessage("email")
+        </p>
+    </fieldset>
+    <fieldset>
+        <legend>Address Information</legend>
+        <p>
+            <label for="address" @if (!ModelState.IsValidField("address")) { <text> class="error-label" </text>    }>Address</label>
+            <input type="text" id="address" name="address" value="@address" @Validation.For("address") />
+            @* Write any address validation errors to the page *@
+            @Html.ValidationMessage("address")
+
+            <label for="city" @if (!ModelState.IsValidField("city")) { <text> class="error-label" </text>    }>City</label>
+            <input type="text" id="city" name="city" value="@city" @Validation.For("city") />
+            @* Write any email validation errors to the page *@
+            @Html.ValidationMessage("city")
+        </p>
+        <p>
+            <label for="state" @if (!ModelState.IsValidField("state")) { <text> class="error-label" </text>    }>State</label>
+            <select id="state" name="state">
+                <option> </option>
+                <option>Alabama</option>
+                <option>Alaska</option>
+                <option>Arizona</option>
+                <option>California</option>
+                <option>Colorado</option>
+                <option>Connecticut</option>
+                <option>Delaware</option>
+                <option>Florida</option>
+                <option>Georgia</option>
+                <option>Hawaii</option>
+                <option>Idaho</option>
+                <option>Illinois</option>
+                <option>Indiana</option>
+                <option>Iowa</option>
+                <option>Kansas</option>
+                <option>Kentucky</option>
+                <option>Louisiana</option>
+                <option>Maine</option>
+                <option>Maryland</option>
+                <option>Massachusetts</option>
+                <option>Michigan</option>
+                <option>Minnesota</option>
+                <option>Mississippi</option>
+                <option>Missouri</option>
+                <option>Montana</option>
+                <option>Nebraska</option>
+                <option>Nevada</option>
+                <option>New Hampshire</option>
+                <option>New Jersey</option>
+                <option>New Mexico</option>
+                <option>New York</option>
+                <option>North Carolina</option>
+                <option>North Dakota</option>
+                <option>Ohio</option>
+                <option>Oklahoma</option>
+                <option>Oregon</option>
+                <option>Pennsylvania</option>
+                <option>Rhode Island</option>
+                <option>South Carolina</option>
+                <option>South Dakota</option>
+                <option>Tennessee</option>
+                <option>Texas</option>
+                <option>Utah</option>
+                <option>Vermont</option>
+                <option>Virginia</option>
+                <option>Washington</option>
+                <option>West Virginia</option>
+                <option>Wisconsin</option>
+                <option>Wyoming</option>
+            </select>
+
+            <label for="zip" @if (!ModelState.IsValidField("zip")) { <text> class="error-label" </text>     }>Zip Code</label>
+            <input type="text" id="zip" name="zip" value="@zip" @Validation.For("zip") />
+            @* Write any email validation errors to the page *@
+            @Html.ValidationMessage("zip")
+        </p>
+    </fieldset>
+    <fieldset>
+        <legend>Phone Number Information</legend>
+        <p>
+            <label for="businessPhoneNumber" @if (!ModelState.IsValidField("businessPhoneNumber")) { <text> class="error-label" </text>     }>Phone Number</label>
+            <input type="text" id="businessPhoneNumber" name="businessPhoneNumber" value="@businessPhoneNumber" @Validation.For("businessPhoneNumber") />
+            @* Write any email validation errors to the page *@
+            @Html.ValidationMessage("businessPhoneNumber")
+        </p>
+    </fieldset>
+    <fieldset>
+        <legend>PW Confirmation</legend>
+        <p class="password">
+            <label for="password" @if (!ModelState.IsValidField("password")) { <text> class="error-label" </text>    }>Password</label>
+            <input type="password" id="password" name="password" @Validation.For("password") />
+            @* Write any password validation errors to the page *@
+            @Html.ValidationMessage("password")
+        </p>
+        <p class="confirm-password">
+            <label for="confirmPassword" @if (!ModelState.IsValidField("confirmPassword")) { <text> class="error-label" </text>    }>Confirm password</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" @Validation.For("confirmPassword") />
+            @* Write any password validation errors to the page *@
+            @Html.ValidationMessage("confirmPassword") <br />
+        </p>
+    </fieldset>
+    <fieldset>
+        <legend>Industry Information</legend>
+        <p class="industry">
+            <label for="industry" @if (!ModelState.IsValidField("major")) { <text> class="error-label" </text>        }>Select Your Industry</label>
+
+            <select id="industry" name="industry">
+                <option></option>
+                <option value="433">Accounting</option>
+                <option value="434">Advertising/Marketing</option>
+                <option value="435">Aerospace</option>
+                <option value="436">Agriculture</option>
+                <option value="437">Architecture/Urban Planning</option>
+                <option value="438">Arts</option>
+                <option value="439">Automotive</option>
+                <option value="440">Banking</option>
+                <option value="441">Biotech &amp; Pharmaceuticals</option>
+                <option value="442">Business Services</option>
+                <option value="443">Chemicals</option>
+                <option value="444">Communications/Media</option>
+                <option value="1504">Computer Information Systems</option>
+                <option value="445">Computers</option>
+                <option value="446">Construction</option>
+                <option value="447">Consulting</option>
+                <option value="448">Consumer Products</option>
+                <option value="1493">Cosmetology</option>
+                <option value="449">Education</option>
+                <option value="450">Electronics</option>
+                <option value="451">Energy</option>
+                <option value="452">Engineering</option>
+                <option value="453">Entertainment</option>
+                <option value="454">Entrepreneurial/Start-Ups</option>
+                <option value="455">Environment</option>
+                <option value="456">Fashion</option>
+                <option value="457">Financial Services</option>
+                <option value="458">Food Science</option>
+                <option value="459">Food Services</option>
+                <option value="460">Forestry</option>
+                <option value="461">Government/Public Administration</option>
+                <option value="1506">Health Information Systems</option>
+                <option value="462">Healthcare</option>
+                <option value="464">Hotel, Restaurant, Hospitality</option>
+                <option value="465">Housing &amp; Urban Development</option>
+                <option value="1507">Information Technology-Networking</option>
+                <option value="466">Insurance</option>
+                <option value="1494">Interior Design</option>
+                <option value="467">International Affairs &amp; Development</option>
+                <option value="468">Internet</option>
+                <option value="469">Investment Banking</option>
+                <option value="470">Law</option>
+                <option value="471">Law Enforcement &amp; Security</option>
+                <option value="472">Manufacturing</option>
+                <option value="473">Maritime</option>
+                <option value="474">Military &amp; Defense</option>
+                <option value="475">Mining</option>
+                <option value="476">Museums &amp; Libraries</option>
+                <option value="477">Natural Resources</option>
+                <option value="478">Non-Profit/Philanthropy</option>
+                <option value="479">Other</option>
+                <option value="480">Parks and Camps</option>
+                <option value="481">Print &amp; Publishing</option>
+                <option value="1498">Railroad</option>
+                <option value="482">Real Estate</option>
+                <option value="483">Religion</option>
+                <option value="484">Retail/Wholesale</option>
+                <option value="485">Rubbers &amp; Plastics</option>
+                <option value="486">Sciences</option>
+                <option value="487">Sports &amp; Recreation</option>
+                <option value="488">Staffing &amp; Executive Search</option>
+                <option value="489">Telecommunications</option>
+                <option value="490">Tobacco</option>
+                <option value="491">Trade</option>
+                <option value="492">Transportation</option>
+                <option value="493">Travel &amp; Tourism</option>
+                <option value="494">Unspecified</option>
+                <option value="495">Utilities</option>
+                <option value="496">Venture Capital/Principal Investing</option>
+                <option value="497">Veterinary</option>
+                <option value="498">Waste Management</option>
+            </select>
+        </p>
+    </fieldset>
+
+
+    <input type="submit" value="Register" />
+    <input type="reset" value="Cancel" />
+
+</form>

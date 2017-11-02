@@ -1,0 +1,15 @@
+﻿@using Login.Concrete
+@model IEnumerable<Posting>
+
+    @{
+        ViewBag.Title = "Postings";
+    }
+
+    <h2>Postings</h2>
+    @foreach (var p in Model)
+    {
+        <div>
+            <h3>@p.jobTitle</h3>
+            <h3>@p.jobDescription</h3>
+        </div>
+    }
